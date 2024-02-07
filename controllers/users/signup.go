@@ -1,4 +1,4 @@
-package controllers
+package users
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (a ApiController) Signup(c *gin.Context) {
+func (u UserController) Signup(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User signed up successfully",
 		"data":    "",
