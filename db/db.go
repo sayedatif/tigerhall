@@ -24,7 +24,7 @@ func Init() {
 		log.Fatal("Error on connecting to DB")
 	}
 
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &Tiger{}, &UserTigerSighting{})
 }
 
 func GetDB() *gorm.DB {
