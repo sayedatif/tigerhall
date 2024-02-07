@@ -1,27 +1,45 @@
 package utils
 
 import (
-	"crypto/rand"
-	"encoding/hex"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gosimple/slug"
 	"github.com/sayedatif/tigerhall/config"
+	"github.com/sayedatif/tigerhall/db"
+	"gorm.io/gorm"
 )
 
-func generateRandomSlug(length int) string {
-	randomBytes := make([]byte, length)
-	_, err := rand.Read(randomBytes)
-	if err != nil {
-		panic(err)
+func IsUsernameExists(database *gorm.DB, username string) bool {
+	var user db.User
+	if err := database.Where("username = ?", username).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return false
+		}
 	}
-	return hex.EncodeToString(randomBytes)[:length]
+	if user.ID > 0 {
+		return true
+	}
+	return false
 }
 
 func GenerateUsername(firstName string, lastName string) string {
-	randomSlug := generateRandomSlug(6)
-	return strings.ToLower(firstName + "_" + lastName + "_" + randomSlug)
+	database := db.GetDB()
+	originalUsername := strings.ToLower(firstName + "_" + lastName)
+
+	initialSlug := slug.Make(originalUsername)
+
+	newUsername := initialSlug
+	counter := 1
+	for IsUsernameExists(database, newUsername) {
+		newSlug := fmt.Sprintf("%s_%d", initialSlug, counter)
+		newUsername = newSlug
+		counter++
+	}
+
+	return newUsername
 }
 
 func GenerateToken(user_id int64, secret []byte) (string, error) {
