@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/controllers/tigers"
 	"github.com/sayedatif/tigerhall/controllers/users"
+	"github.com/sayedatif/tigerhall/middleware"
 )
 
 func NewRouter() *gin.Engine {
@@ -19,9 +20,9 @@ func NewRouter() *gin.Engine {
 	tigerRoute := router.Group("/tigers")
 	{
 		tigerController := new(tigers.TigerController)
-		tigerRoute.POST("", tigerController.CreateTiger)
+		tigerRoute.POST("", middleware.JWTAuthMiddleware(), tigerController.CreateTiger)
 		tigerRoute.GET("", tigerController.GetTigers)
-		tigerRoute.POST("/:tiger_id/sighting", tigerController.CreateTigerSighting)
+		tigerRoute.POST("/:tiger_id/sighting", middleware.JWTAuthMiddleware(), tigerController.CreateTigerSighting)
 		tigerRoute.GET("/:tiger_id/sighting", tigerController.GetTigerSightings)
 	}
 	return router
