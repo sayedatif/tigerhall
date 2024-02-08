@@ -2,6 +2,7 @@ package tigers
 
 import (
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -10,17 +11,36 @@ import (
 	"gorm.io/gorm"
 )
 
-type CreateTigerSightingBody struct {
-	Lat    float64 `json:"lat" binding:"required"`
-	Long   float64 `json:"long" binding:"required"`
-	SeenAt string  `json:"seen_at" binding:"required"`
-}
-
 func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	user_id := c.MustGet("user_id")
-	var body CreateTigerSightingBody
-	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	lat := c.Request.FormValue("lat")
+	if lat == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Lat is required"})
+		return
+	}
+
+	long := c.Request.FormValue("long")
+	if long == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Long is required"})
+		return
+	}
+
+	seenAtStr := c.Request.FormValue("seen_at")
+	if seenAtStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "seen_at is required"})
+		return
+	}
+
+	file, handler, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
+		return
+	}
+	defer file.Close()
+
+	ext := filepath.Ext(handler.Filename)
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported file format."})
 		return
 	}
 
@@ -28,6 +48,13 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	numTigerID, err := strconv.Atoi(tigerID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	numUserId := user_id.(float64)
+	filePath, err := utils.HandleImageUpload(file, int(numUserId), tigerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -42,15 +69,15 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		return
 	}
 
-	parsedSeenAt, err := utils.GetParsedTime(body.SeenAt)
+	parsedSeenAt, err := utils.GetParsedTime(seenAtStr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	numUserId := user_id.(float64)
-
-	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: parsedSeenAt, Lat: body.Lat, Long: body.Long}
+	floatLat, _ := strconv.ParseFloat(lat, 64)
+	floatLong, _ := strconv.ParseFloat(long, 64)
+	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: parsedSeenAt, Lat: floatLat, Long: floatLong, ImageUrl: filePath}
 	if err := database.Create(&createTigerSighting).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return

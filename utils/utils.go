@@ -2,11 +2,20 @@ package utils
 
 import (
 	"fmt"
+	"image"
+	"image/jpeg"
+	"mime/multipart"
+	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
+	_ "image/png"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gosimple/slug"
+	"github.com/nfnt/resize"
 	"github.com/sayedatif/tigerhall/config"
 	"github.com/sayedatif/tigerhall/db"
 	"gorm.io/gorm"
@@ -71,4 +80,43 @@ func GetParsedTime(dateString string) (time.Time, error) {
 		return time.Now(), err
 	}
 	return parsedLastSeenAt, nil
+}
+
+func HandleImageUpload(file multipart.File, userId int, tigerId string) (string, error) {
+	_, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return "", err
+	}
+
+	file.Seek(0, 0)
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return "", err
+	}
+	resizedImg := resize.Resize(250, 200, img, resize.Lanczos3)
+
+	stringUserId := strconv.Itoa(userId)
+	userDir := filepath.Join("./uploads", stringUserId)
+	err = os.MkdirAll(userDir, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	now := time.Now()
+	formattedTime := now.Format("2006-01-02T15:04:05")
+	filename := filepath.Base(fmt.Sprintf("tiger_%s_%s.jpg", tigerId, formattedTime))
+	filepath := filepath.Join(fmt.Sprintf("./uploads/%s", stringUserId), filename)
+	out, err := os.Create(filepath)
+	if err != nil {
+		return "", err
+	}
+	defer out.Close()
+
+	err = jpeg.Encode(out, resizedImg, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath, nil
 }

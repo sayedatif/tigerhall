@@ -17,13 +17,12 @@ type CreateTigerBody struct {
 }
 
 func (t TigerController) CreateTiger(c *gin.Context) {
+	user_id := c.MustGet("user_id")
 	var body CreateTigerBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	database := db.GetDB()
 
 	parsedLastSeenAt, err := utils.GetParsedTime(body.LastSeenAt)
 	if err != nil {
@@ -31,8 +30,17 @@ func (t TigerController) CreateTiger(c *gin.Context) {
 		return
 	}
 
+	database := db.GetDB()
+
 	createTiger := db.Tiger{Name: body.Name, DOB: body.DOB, LastSeenAt: parsedLastSeenAt, LastSeenLat: body.LastSeenLat, LastSeenLong: body.LastSeenLong}
 	if err := database.Create(&createTiger).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	numUserId := user_id.(float64)
+	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(createTiger.ID), SeenAt: parsedLastSeenAt, Lat: body.LastSeenLat, Long: body.LastSeenLong}
+	if err := database.Create(&createTigerSighting).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
