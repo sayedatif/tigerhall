@@ -13,5 +13,4 @@ type User struct {
 	Email     string `gorm:"unique;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Tigers    []Tiger `gorm:"many2many:user_tiger_sightings"`
 }
