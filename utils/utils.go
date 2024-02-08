@@ -62,3 +62,13 @@ func GetEnv(key string) any {
 	env := config.Get(key)
 	return env
 }
+
+func GetParsedTime(dateString string) (time.Time, error) {
+	layout := "2006-01-02 15:04:05.999"
+
+	parsedLastSeenAt, err := time.Parse(layout, dateString)
+	if err != nil {
+		return time.Now(), err
+	}
+	return parsedLastSeenAt, nil
+}

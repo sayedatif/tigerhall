@@ -2,6 +2,8 @@ package db
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Tiger struct {
@@ -14,4 +16,16 @@ type Tiger struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	Users        []User `gorm:"many2many:user_tiger_sightings"`
+}
+
+func (t *Tiger) BeforeCreate(tx *gorm.DB) (err error) {
+	now := time.Now()
+	t.CreatedAt = now
+	t.UpdatedAt = now
+	return nil
+}
+
+func (t *Tiger) BeforeUpdate(tx *gorm.DB) (err error) {
+	t.UpdatedAt = time.Now()
+	return nil
 }

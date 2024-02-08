@@ -2,7 +2,6 @@ package users
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
@@ -42,9 +41,6 @@ func (u UserController) Signup(c *gin.Context) {
 	username := utils.GenerateUsername(body.FirstName, body.LastName)
 
 	createUser := db.User{FirstName: body.FirstName, LastName: body.LastName, Email: body.Email, Password: hashedPassword, Username: username}
-	now := time.Now()
-	createUser.CreatedAt = now
-	createUser.UpdatedAt = now
 	if err := database.Create(&createUser).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
