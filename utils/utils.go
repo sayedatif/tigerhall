@@ -97,7 +97,7 @@ func HandleImageUpload(file multipart.File, userId int, tigerId string) (string,
 	resizedImg := resize.Resize(250, 200, img, resize.Lanczos3)
 
 	stringUserId := strconv.Itoa(userId)
-	userDir := filepath.Join("./uploads", stringUserId)
+	userDir := filepath.Join("./images", stringUserId)
 	err = os.MkdirAll(userDir, os.ModePerm)
 	if err != nil {
 		return "", err
@@ -106,7 +106,7 @@ func HandleImageUpload(file multipart.File, userId int, tigerId string) (string,
 	now := time.Now()
 	formattedTime := now.Format("2006-01-02T15:04:05")
 	filename := filepath.Base(fmt.Sprintf("tiger_%s_%s.jpg", tigerId, formattedTime))
-	filepath := filepath.Join(fmt.Sprintf("./uploads/%s", stringUserId), filename)
+	filepath := filepath.Join(fmt.Sprintf("./images/%s", stringUserId), filename)
 	out, err := os.Create(filepath)
 	if err != nil {
 		return "", err

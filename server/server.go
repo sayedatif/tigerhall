@@ -13,5 +13,8 @@ func Init() {
 	if port == "" {
 		port = "8080"
 	}
+
+	router.Static("/images", "./images")
+
 	router.Run(fmt.Sprintf(":%s", port))
 }
