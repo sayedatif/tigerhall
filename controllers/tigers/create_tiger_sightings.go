@@ -68,6 +68,14 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		return
 	}
 
+	floatLat, _ := strconv.ParseFloat(lat, 64)
+	floatLong, _ := strconv.ParseFloat(long, 64)
+	distance := utils.CalculateDistance(tiger.LastSeenLat, tiger.LastSeenLong, floatLat, floatLong)
+	if distance < 5 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Tiger is previously sighted within 5 kilometres"})
+		return
+	}
+
 	numUserId := user_id.(float64)
 	filePath, err := utils.HandleImageUpload(file, int(numUserId), tigerID)
 	if err != nil {
@@ -75,8 +83,6 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		return
 	}
 
-	floatLat, _ := strconv.ParseFloat(lat, 64)
-	floatLong, _ := strconv.ParseFloat(long, 64)
 	seenAt := time.Now()
 	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: seenAt, Lat: floatLat, Long: floatLong, ImageUrl: filePath}
 	if err := tx.Create(&createTigerSighting).Error; err != nil {
