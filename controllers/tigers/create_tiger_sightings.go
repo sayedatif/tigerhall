@@ -51,13 +51,6 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		return
 	}
 
-	numUserId := user_id.(float64)
-	filePath, err := utils.HandleImageUpload(file, int(numUserId), tigerID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	database := db.GetDB()
 	var tiger db.Tiger
 	if err := database.Where("id = ?", tigerID).First(&tiger).Error; err != nil {
@@ -66,6 +59,13 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		}
+		return
+	}
+
+	numUserId := user_id.(float64)
+	filePath, err := utils.HandleImageUpload(file, int(numUserId), tigerID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
