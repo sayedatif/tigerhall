@@ -7,6 +7,7 @@ import (
 	"github.com/sayedatif/tigerhall/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var db *gorm.DB
@@ -19,7 +20,9 @@ func Init() {
 	dbHost := c.GetString("DB_HOST")
 	dbName := c.GetString("DB_NAME")
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbName)
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		log.Fatal("Error on connecting to DB")
 	}

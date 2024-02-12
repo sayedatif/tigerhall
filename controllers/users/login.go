@@ -19,14 +19,13 @@ type TokenResponse struct {
 	Token string `json:"token"`
 }
 
-func Login(c *gin.Context) {
+func (u UserController) Login(c *gin.Context) {
 	var body LoginBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	database := db.GetDB()
+	database := u.DB
 	var user db.User
 	if err := database.Where("email = ?", body.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

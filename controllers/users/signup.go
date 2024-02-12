@@ -16,14 +16,14 @@ type SignupBody struct {
 	Password  string `json:"password" binding:"required"`
 }
 
-func Signup(c *gin.Context) {
+func (u UserController) Signup(c *gin.Context) {
 	var body SignupBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	database := db.GetDB()
+	database := u.DB
 	var user db.User
 	if err := database.Where("email = ?", body.Email).First(&user).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {

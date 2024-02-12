@@ -4,16 +4,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/controllers/tigers"
 	"github.com/sayedatif/tigerhall/controllers/users"
+	"github.com/sayedatif/tigerhall/db"
 	"github.com/sayedatif/tigerhall/middleware"
 )
 
 func NewRouter() *gin.Engine {
 	router := gin.Default()
 
+	database := db.GetDB()
 	userRoute := router.Group("/users")
 	{
-		userRoute.POST("/login", users.Login)
-		userRoute.POST("/signup", users.Signup)
+		userController := new(users.UserController)
+		userController.DB = database
+		userRoute.POST("/login", userController.Login)
+		userRoute.POST("/signup", userController.Signup)
 	}
 
 	tigerRoute := router.Group("/tigers")
