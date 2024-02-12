@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
 
@@ -34,8 +35,13 @@ func (t TigerController) GetTigerSightings(c *gin.Context) {
 		return
 	}
 
+	page := c.DefaultQuery("page", "1")
+	intPage, _ := utils.StringToInt(page)
+	pageSize := c.DefaultQuery("page_size", "10")
+	intPageSize, _ := utils.StringToInt(pageSize)
+
 	var userTigerSighting []db.UserTigerSighting
-	if err := database.Where("tiger_id = ?", tigerID).Order("seen_at desc").Find(&userTigerSighting).Error; err != nil {
+	if err := database.Where("tiger_id = ?", tigerID).Order("seen_at desc").Limit(intPageSize).Offset((intPage - 1) * intPageSize).Find(&userTigerSighting).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		} else {

@@ -120,3 +120,11 @@ func HandleImageUpload(file multipart.File, userId int, tigerId string) (string,
 
 	return filepath, nil
 }
+
+func StringToInt(s string) (int, error) {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return i, nil
+}

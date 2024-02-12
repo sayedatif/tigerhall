@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
 
@@ -22,8 +23,13 @@ type TigerResponse struct {
 
 func (t TigerController) GetTigers(c *gin.Context) {
 	database := db.GetDB()
+	page := c.DefaultQuery("page", "1")
+	intPage, _ := utils.StringToInt(page)
+	pageSize := c.DefaultQuery("page_size", "10")
+	intPageSize, _ := utils.StringToInt(pageSize)
+
 	var tiger []db.Tiger
-	if err := database.Order("last_seen_at desc").Find(&tiger).Error; err != nil {
+	if err := database.Order("last_seen_at desc").Limit(intPageSize).Offset((intPage - 1) * intPageSize).Find(&tiger).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		} else {
