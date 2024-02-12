@@ -32,15 +32,24 @@ func (t TigerController) CreateTiger(c *gin.Context) {
 
 	database := db.GetDB()
 
+	tx := database.Begin()
+
 	createTiger := db.Tiger{Name: body.Name, DOB: body.DOB, LastSeenAt: parsedLastSeenAt, LastSeenLat: body.LastSeenLat, LastSeenLong: body.LastSeenLong}
-	if err := database.Create(&createTiger).Error; err != nil {
+	if err := tx.Create(&createTiger).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
 	numUserId := user_id.(float64)
 	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(createTiger.ID), SeenAt: parsedLastSeenAt, Lat: body.LastSeenLat, Long: body.LastSeenLong}
-	if err := database.Create(&createTigerSighting).Error; err != nil {
+	if err := tx.Create(&createTigerSighting).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}

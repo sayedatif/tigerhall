@@ -55,8 +55,11 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	}
 
 	database := db.GetDB()
+
+	tx := database.Begin()
 	var tiger db.Tiger
-	if err := database.Where("id = ?", tigerID).First(&tiger).Error; err != nil {
+	if err := tx.Where("id = ?", tigerID).First(&tiger).Error; err != nil {
+		tx.Rollback()
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Not found"})
 		} else {
@@ -74,14 +77,28 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 
 	floatLat, _ := strconv.ParseFloat(lat, 64)
 	floatLong, _ := strconv.ParseFloat(long, 64)
-	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: time.Now(), Lat: floatLat, Long: floatLong, ImageUrl: filePath}
-	if err := database.Create(&createTigerSighting).Error; err != nil {
+	seenAt := time.Now()
+	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: seenAt, Lat: floatLat, Long: floatLong, ImageUrl: filePath}
+	if err := tx.Create(&createTigerSighting).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	if err := tx.Model(&db.Tiger{}).Where("id = ?", numTigerID).Updates(db.Tiger{LastSeenAt: seenAt, LastSeenLat: floatLat, LastSeenLong: floatLong}).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
 	var result []Result
-	if err := database.Raw("SELECT u.email, t.name as tiger_name, t.last_seen_lat, t.last_seen_long FROM user_tiger_sightings uts JOIN users u on u.id = uts.user_id JOIN tigers t on t.id = uts.tiger_id WHERE tiger_id = ? and user_id != ? group by uts.user_id, u.email, t.name, t.last_seen_lat, t.last_seen_long", tigerID, numUserId).Scan(&result).Error; err != nil {
+	if err := tx.Raw("SELECT u.email, t.name as tiger_name, t.last_seen_lat, t.last_seen_long FROM user_tiger_sightings uts JOIN users u on u.id = uts.user_id JOIN tigers t on t.id = uts.tiger_id WHERE tiger_id = ? and user_id != ? group by uts.user_id, u.email, t.name, t.last_seen_lat, t.last_seen_long", tigerID, numUserId).Scan(&result).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
