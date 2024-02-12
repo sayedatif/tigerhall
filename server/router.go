@@ -22,10 +22,12 @@ func NewRouter() *gin.Engine {
 
 	tigerRoute := router.Group("/tigers")
 	{
-		tigerRoute.POST("", middleware.JWTAuthMiddleware(), tigers.CreateTiger)
-		tigerRoute.GET("", tigers.GetTigers)
-		tigerRoute.POST("/:tiger_id/sighting", middleware.JWTAuthMiddleware(), tigers.CreateTigerSighting)
-		tigerRoute.GET("/:tiger_id/sighting", tigers.GetTigerSightings)
+		tigerController := new(tigers.TigerController)
+		tigerController.DB = database
+		tigerRoute.POST("", middleware.JWTAuthMiddleware(), tigerController.CreateTiger)
+		tigerRoute.GET("", tigerController.GetTigers)
+		tigerRoute.POST("/:tiger_id/sighting", middleware.JWTAuthMiddleware(), tigerController.CreateTigerSighting)
+		tigerRoute.GET("/:tiger_id/sighting", tigerController.GetTigerSightings)
 	}
 	return router
 }

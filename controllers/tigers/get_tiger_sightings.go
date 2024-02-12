@@ -22,9 +22,9 @@ type TigerSightingsResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func GetTigerSightings(c *gin.Context) {
+func (t TigerController) GetTigerSightings(c *gin.Context) {
 	tigerID := c.Param("tiger_id")
-	database := db.GetDB()
+	database := t.DB
 	var tiger db.Tiger
 	if err := database.Where("id = ?", tigerID).First(&tiger).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

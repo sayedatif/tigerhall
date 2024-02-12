@@ -21,8 +21,8 @@ type TigerResponse struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-func GetTigers(c *gin.Context) {
-	database := db.GetDB()
+func (t TigerController) GetTigers(c *gin.Context) {
+	database := t.DB
 	page := c.DefaultQuery("page", "1")
 	intPage, _ := utils.StringToInt(page)
 	pageSize := c.DefaultQuery("page_size", "10")

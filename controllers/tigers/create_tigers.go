@@ -16,7 +16,7 @@ type CreateTigerBody struct {
 	LastSeenLong float64 `json:"last_seen_long" binding:"required"`
 }
 
-func CreateTiger(c *gin.Context) {
+func (t TigerController) CreateTiger(c *gin.Context) {
 	user_id := c.MustGet("user_id")
 	var body CreateTigerBody
 	if err := c.ShouldBindJSON(&body); err != nil {
@@ -30,7 +30,7 @@ func CreateTiger(c *gin.Context) {
 		return
 	}
 
-	database := db.GetDB()
+	database := t.DB
 
 	tx := database.Begin()
 
