@@ -1,15 +1,24 @@
 package tigers
 
 import (
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
 	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
+
+type Result struct {
+	Email        string  `json:"email"`
+	TigerName    string  `json:"tiger_name"`
+	LastSeenLat  float64 `json:"last_seen_lat"`
+	LastSeenLong float64 `json:"last_seen_long"`
+}
 
 func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	user_id := c.MustGet("user_id")
@@ -22,12 +31,6 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	long := c.Request.FormValue("long")
 	if long == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Long is required"})
-		return
-	}
-
-	seenAtStr := c.Request.FormValue("seen_at")
-	if seenAtStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "seen_at is required"})
 		return
 	}
 
@@ -69,18 +72,35 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		return
 	}
 
-	parsedSeenAt, err := utils.GetParsedTime(seenAtStr)
-	if err != nil {
+	floatLat, _ := strconv.ParseFloat(lat, 64)
+	floatLong, _ := strconv.ParseFloat(long, 64)
+	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: time.Now(), Lat: floatLat, Long: floatLong, ImageUrl: filePath}
+	if err := database.Create(&createTigerSighting).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
-	floatLat, _ := strconv.ParseFloat(lat, 64)
-	floatLong, _ := strconv.ParseFloat(long, 64)
-	createTigerSighting := db.UserTigerSighting{UserId: uint(numUserId), TigerId: uint(numTigerID), SeenAt: parsedSeenAt, Lat: floatLat, Long: floatLong, ImageUrl: filePath}
-	if err := database.Create(&createTigerSighting).Error; err != nil {
+	var result []Result
+	if err := database.Raw("SELECT u.email, t.name as tiger_name, t.last_seen_lat, t.last_seen_long FROM user_tiger_sightings uts JOIN users u on u.id = uts.user_id JOIN tigers t on t.id = uts.tiger_id WHERE tiger_id = ? and user_id != ? group by uts.user_id, u.email, t.name, t.last_seen_lat, t.last_seen_long", tigerID, numUserId).Scan(&result).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
+	}
+
+	emailQueue := make(chan utils.Email, 100)
+	go func() {
+		for {
+			email := <-emailQueue
+			utils.SendEmail(database, email)
+		}
+	}()
+
+	for i := 0; i < len(result); i++ {
+		email := utils.Email{
+			To:      result[i].Email,
+			Subject: "Tiger Sighted",
+			Body:    fmt.Sprintf("%s has been sighted at %.2f, %.2f", result[i].TigerName, result[i].LastSeenLat, result[i].LastSeenLong),
+		}
+		emailQueue <- email
 	}
 
 	c.JSON(http.StatusOK, gin.H{
