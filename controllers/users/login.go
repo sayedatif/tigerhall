@@ -19,7 +19,7 @@ type TokenResponse struct {
 	Token string `json:"token"`
 }
 
-func (u UserController) Login(c *gin.Context) {
+func Login(c *gin.Context) {
 	var body LoginBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

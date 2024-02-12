@@ -22,7 +22,7 @@ type TigerSightingsResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (t TigerController) GetTigerSightings(c *gin.Context) {
+func GetTigerSightings(c *gin.Context) {
 	tigerID := c.Param("tiger_id")
 	database := db.GetDB()
 	var tiger db.Tiger

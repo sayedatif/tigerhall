@@ -12,18 +12,16 @@ func NewRouter() *gin.Engine {
 
 	userRoute := router.Group("/users")
 	{
-		userController := new(users.UserController)
-		userRoute.POST("/login", userController.Login)
-		userRoute.POST("/signup", userController.Signup)
+		userRoute.POST("/login", users.Login)
+		userRoute.POST("/signup", users.Signup)
 	}
 
 	tigerRoute := router.Group("/tigers")
 	{
-		tigerController := new(tigers.TigerController)
-		tigerRoute.POST("", middleware.JWTAuthMiddleware(), tigerController.CreateTiger)
-		tigerRoute.GET("", tigerController.GetTigers)
-		tigerRoute.POST("/:tiger_id/sighting", middleware.JWTAuthMiddleware(), tigerController.CreateTigerSighting)
-		tigerRoute.GET("/:tiger_id/sighting", tigerController.GetTigerSightings)
+		tigerRoute.POST("", middleware.JWTAuthMiddleware(), tigers.CreateTiger)
+		tigerRoute.GET("", tigers.GetTigers)
+		tigerRoute.POST("/:tiger_id/sighting", middleware.JWTAuthMiddleware(), tigers.CreateTigerSighting)
+		tigerRoute.GET("/:tiger_id/sighting", tigers.GetTigerSightings)
 	}
 	return router
 }

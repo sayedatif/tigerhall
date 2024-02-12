@@ -1,22 +1,29 @@
 package config
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
 var config *viper.Viper
 
-func Init() {
+func Init(path string) {
 	var err error
 	config = viper.New()
 
-	config.SetConfigFile(".env")
+	config.SetConfigFile(path)
 
 	err = config.ReadInConfig()
 	if err != nil {
-		log.Fatal("Error on parsing configuration file")
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Println("Error: .env file not found")
+			os.Exit(1)
+		} else {
+			fmt.Printf("Error reading .env file: %s\n", err)
+			os.Exit(1)
+		}
 	}
 }
 

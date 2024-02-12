@@ -20,7 +20,7 @@ type Result struct {
 	LastSeenLong float64 `json:"last_seen_long"`
 }
 
-func (t TigerController) CreateTigerSighting(c *gin.Context) {
+func CreateTigerSighting(c *gin.Context) {
 	user_id := c.MustGet("user_id")
 	lat := c.Request.FormValue("lat")
 	if lat == "" {
