@@ -52,3 +52,35 @@ type GetTigerSightingResponse struct {
 	Message string                   `json:"message"`
 	Data    []TigerSightingsResponse `json:"data"`
 }
+
+type SignupBody struct {
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Password  string `json:"password" binding:"required"`
+}
+
+type SignupResponse struct {
+	Message string `json:"message"`
+}
+
+type LoginBody struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
+type CreateTigerBody struct {
+	Name         string  `json:"name" binding:"required"`
+	DOB          string  `json:"dob" binding:"required"`
+	LastSeenAt   string  `json:"last_seen_at" binding:"required"`
+	LastSeenLat  float64 `json:"last_seen_lat" binding:"required"`
+	LastSeenLong float64 `json:"last_seen_long" binding:"required"`
+}
+
+type InternalServerError struct {
+	Error string `json:"error"`
+}

@@ -10,6 +10,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary GetTigerSightings
+// @Accept json
+// @Produce json
+// @Param tiger_id path int true "Tiger Id"
+// @Param page query int false "Page"
+// @Param page_size query int false "Page size"
+// @Success 200 {object} []types.TigerSightingsResponse
+// @Failure 500 {object} types.InternalServerError
+// @Router /tigers/:tiger_id/sighting [get]
 func (t TigerController) GetTigerSightings(c *gin.Context) {
 	tigerID := c.Param("tiger_id")
 	database := t.DB

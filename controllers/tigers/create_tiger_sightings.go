@@ -21,6 +21,18 @@ type Result struct {
 	LastSeenLong float64 `json:"last_seen_long"`
 }
 
+// @Summary CreateTigerSighting
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "Bearer <token>"
+// @Param tiger_id path int true "Tiger Id"
+// @Param lat formData string true "Lat"
+// @Param long formData string true "Long"
+// @Param file formData file false "File"
+// @Success 200 {object} types.CreateTigerSighting
+// @Failure 500 {object} types.InternalServerError
+// @Router /tigers/:tiger_id/sighting [post]
 func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	user_id := c.MustGet("user_id")
 	lat := c.Request.FormValue("lat")

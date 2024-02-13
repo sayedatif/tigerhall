@@ -6,21 +6,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/types"
 	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
 
-type LoginBody struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
-}
-
-type TokenResponse struct {
-	Token string `json:"token"`
-}
-
+// @Summary Login
+// @Accept json
+// @Produce json
+// @Param login body types.LoginBody true "User login information"
+// @Success 200 {object} types.LoginResponse
+// @Failure 500 {object} types.InternalServerError
+// @Router /users/login [post]
 func (u UserController) Login(c *gin.Context) {
-	var body LoginBody
+	var body types.LoginBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -57,7 +56,7 @@ func (u UserController) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",
-		"data": TokenResponse{
+		"data": types.LoginResponse{
 			Token: token,
 		},
 	})

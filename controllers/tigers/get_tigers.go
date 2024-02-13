@@ -10,6 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// @Summary GetTigers
+// @Accept json
+// @Produce json
+// @Param page query int false "Page"
+// @Param page_size query int false "Page size"
+// @Success 200 {object} types.TigerResponse
+// @Failure 500 {object} types.InternalServerError
+// @Router /tigers [get]
 func (t TigerController) GetTigers(c *gin.Context) {
 	database := t.DB
 	page := c.DefaultQuery("page", "1")

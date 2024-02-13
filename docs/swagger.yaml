@@ -1,0 +1,289 @@
+definitions:
+  types.CreateTiger:
+    properties:
+      tiger_id:
+        type: integer
+    type: object
+  types.CreateTigerBody:
+    properties:
+      dob:
+        type: string
+      last_seen_at:
+        type: string
+      last_seen_lat:
+        type: number
+      last_seen_long:
+        type: number
+      name:
+        type: string
+    required:
+    - dob
+    - last_seen_at
+    - last_seen_lat
+    - last_seen_long
+    - name
+    type: object
+  types.CreateTigerSighting:
+    properties:
+      tiger_sighting_id:
+        type: integer
+    type: object
+  types.InternalServerError:
+    properties:
+      error:
+        type: string
+    type: object
+  types.LoginBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  types.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  types.SignupBody:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    type: object
+  types.SignupResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  types.TigerResponse:
+    properties:
+      created_at:
+        type: string
+      dob:
+        type: string
+      id:
+        type: integer
+      last_seen_at:
+        type: string
+      last_seen_lat:
+        type: number
+      last_seen_long:
+        type: number
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  types.TigerSightingsResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      lat:
+        type: number
+      long:
+        type: number
+      seen_at:
+        type: string
+      tiger_id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /tigers:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.TigerResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.InternalServerError'
+      summary: GetTigers
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Create tiger information
+        in: body
+        name: createTiger
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateTigerBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateTiger'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.InternalServerError'
+      security:
+      - ApiKeyAuth: []
+      summary: CreateTiger
+  /tigers/:tiger_id/sighting:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tiger Id
+        in: path
+        name: tiger_id
+        required: true
+        type: integer
+      - description: Page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.TigerSightingsResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.InternalServerError'
+      summary: GetTigerSightings
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Bearer <token>
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Tiger Id
+        in: path
+        name: tiger_id
+        required: true
+        type: integer
+      - description: Lat
+        in: formData
+        name: lat
+        required: true
+        type: string
+      - description: Long
+        in: formData
+        name: long
+        required: true
+        type: string
+      - description: File
+        in: formData
+        name: file
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.CreateTigerSighting'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.InternalServerError'
+      security:
+      - ApiKeyAuth: []
+      summary: CreateTigerSighting
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User login information
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/types.LoginBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.InternalServerError'
+      summary: Login
+  /users/signup:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User signup information
+        in: body
+        name: signup
+        required: true
+        schema:
+          $ref: '#/definitions/types.SignupBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.SignupResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.InternalServerError'
+      summary: Signup
+swagger: "2.0"

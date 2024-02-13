@@ -5,19 +5,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/types"
 	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
 
-type SignupBody struct {
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	Email     string `json:"email" binding:"required"`
-	Password  string `json:"password" binding:"required"`
-}
-
+// @Summary Signup
+// @Accept json
+// @Produce json
+// @Param signup body types.SignupBody true "User signup information"
+// @Success 200 {object} types.SignupResponse
+// @Failure 500 {object} types.InternalServerError
+// @Router /users/signup [post]
 func (u UserController) Signup(c *gin.Context) {
-	var body SignupBody
+	var body types.SignupBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -5,11 +5,16 @@ import (
 	"github.com/sayedatif/tigerhall/controllers/tigers"
 	"github.com/sayedatif/tigerhall/controllers/users"
 	"github.com/sayedatif/tigerhall/db"
+	_ "github.com/sayedatif/tigerhall/docs"
 	"github.com/sayedatif/tigerhall/middleware"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func NewRouter() *gin.Engine {
 	router := gin.Default()
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	database := db.GetDB()
 	userRoute := router.Group("/users")

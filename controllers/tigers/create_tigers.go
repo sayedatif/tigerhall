@@ -9,17 +9,18 @@ import (
 	"github.com/sayedatif/tigerhall/utils"
 )
 
-type CreateTigerBody struct {
-	Name         string  `json:"name" binding:"required"`
-	DOB          string  `json:"dob" binding:"required"`
-	LastSeenAt   string  `json:"last_seen_at" binding:"required"`
-	LastSeenLat  float64 `json:"last_seen_lat" binding:"required"`
-	LastSeenLong float64 `json:"last_seen_long" binding:"required"`
-}
-
+// @Summary CreateTiger
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "Bearer <token>"
+// @Param createTiger body types.CreateTigerBody true "Create tiger information"
+// @Success 200 {object} types.CreateTiger
+// @Failure 500 {object} types.InternalServerError
+// @Router /tigers [post]
 func (t TigerController) CreateTiger(c *gin.Context) {
 	user_id := c.MustGet("user_id")
-	var body CreateTigerBody
+	var body types.CreateTigerBody
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
