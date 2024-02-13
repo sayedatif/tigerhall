@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/types"
 	"github.com/sayedatif/tigerhall/utils"
 )
 
@@ -54,7 +55,11 @@ func (t TigerController) CreateTiger(c *gin.Context) {
 		return
 	}
 
+	var response types.CreateTiger
+	response.TigerId = createTiger.ID
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Created new tiger successfully",
+		"data":    response,
 	})
 }

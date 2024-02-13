@@ -2,24 +2,13 @@ package tigers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/types"
 	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
-
-type TigerResponse struct {
-	ID           int64     `json:"id"`
-	Name         string    `json:"name"`
-	DOB          string    `json:"dob"`
-	LastSeenAt   time.Time `json:"last_seen_at"`
-	LastSeenLat  float64   `json:"last_seen_lat"`
-	LastSeenLong float64   `json:"last_seen_long"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
-}
 
 func (t TigerController) GetTigers(c *gin.Context) {
 	database := t.DB
@@ -38,10 +27,10 @@ func (t TigerController) GetTigers(c *gin.Context) {
 		return
 	}
 
-	response := make([]TigerResponse, 0)
+	response := make([]types.TigerResponse, 0)
 
 	for _, t := range tiger {
-		response = append(response, TigerResponse{
+		response = append(response, types.TigerResponse{
 			ID:           t.ID,
 			Name:         t.Name,
 			DOB:          t.DOB,

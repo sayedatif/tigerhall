@@ -38,4 +38,12 @@ func teardown() {
 	if err := database.Where("email = ?", "test@test.com").Delete(&db.User{}).Error; err != nil {
 		log.Printf("Error deleting test user: %v", err)
 	}
+
+	if err := database.Where("id = ?", tigerId).Delete(&db.Tiger{}).Error; err != nil {
+		log.Printf("Error deleting test tiger: %v", err)
+	}
+
+	if err := database.Where("id = ?", tigerSightingId).Delete(&db.UserTigerSighting{}).Error; err != nil {
+		log.Printf("Error deleting test tiger sighting: %v", err)
+	}
 }

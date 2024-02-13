@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/types"
 	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
@@ -35,16 +36,18 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	}
 
 	file, handler, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
-		return
-	}
-	defer file.Close()
+	if file != nil {
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
+			return
+		}
+		defer file.Close()
 
-	ext := filepath.Ext(handler.Filename)
-	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported file format."})
-		return
+		ext := filepath.Ext(handler.Filename)
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Unsupported file format."})
+			return
+		}
 	}
 
 	tigerID := c.Param("tiger_id")
@@ -77,10 +80,13 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 	}
 
 	numUserId := user_id.(float64)
-	filePath, err := utils.HandleImageUpload(file, int(numUserId), tigerID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	var filePath string
+	if file != nil {
+		filePath, err = utils.HandleImageUpload(file, int(numUserId), tigerID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	seenAt := time.Now()
@@ -126,7 +132,11 @@ func (t TigerController) CreateTigerSighting(c *gin.Context) {
 		emailQueue <- email
 	}
 
+	var response types.CreateTigerSighting
+	response.TigerSightingId = createTigerSighting.ID
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Created tiger sighting successfully",
+		"data":    response,
 	})
 }

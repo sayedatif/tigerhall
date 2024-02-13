@@ -2,25 +2,13 @@ package tigers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sayedatif/tigerhall/db"
+	"github.com/sayedatif/tigerhall/types"
 	"github.com/sayedatif/tigerhall/utils"
 	"gorm.io/gorm"
 )
-
-type TigerSightingsResponse struct {
-	ID        int64     `json:"id"`
-	UserId    int64     `json:"user_id"`
-	TigerId   int64     `json:"tiger_id"`
-	SeenAt    time.Time `json:"seen_at"`
-	Lat       float64   `json:"lat"`
-	Long      float64   `json:"long"`
-	ImageUrl  string    `json:"image_url"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
 
 func (t TigerController) GetTigerSightings(c *gin.Context) {
 	tigerID := c.Param("tiger_id")
@@ -50,10 +38,10 @@ func (t TigerController) GetTigerSightings(c *gin.Context) {
 		return
 	}
 
-	response := make([]TigerSightingsResponse, 0)
+	response := make([]types.TigerSightingsResponse, 0)
 
 	for _, t := range userTigerSighting {
-		response = append(response, TigerSightingsResponse{
+		response = append(response, types.TigerSightingsResponse{
 			ID:        t.ID,
 			UserId:    int64(t.UserId),
 			TigerId:   int64(t.TigerId),
